@@ -9,22 +9,31 @@ int main(int argc, char *argv[])
 
 
 	const wchar_t *url = L"http://www.nirsoft.net/utils/nircmd.zip";
-	//const wchar_t *url = L"http://60.191.59.13:7800/ftp/0.mp4";
 	const wchar_t *fileName = L"E:\\downloadfile.zip";
 	bool tag = false;
+	int statusCode = 0;
 
-	CFileDownload	m_filedownload;
-	if (!m_filedownload.Init(url, fileName, tag))
+	CFileDownload	filedownload;
+
+	//tag = true;
+	//if (!m_filedownload.Init(url, fileName, tag, &statusCode))
+	if (!filedownload.Init(url, nullptr, tag, &statusCode))
 	{
-		fprintf(stderr, "init failed. \n");
+		fprintf(stderr, "Init failed. \n");
 		getchar();
 		return -1;
 	}
+	fprintf(stderr, "statusCode = %d \n", statusCode);
+
+	int totalSize = filedownload.GetFileSize();
+	int recvCount = 0;
 
 	uint8_t *ptr = nullptr;
 	int size = 0;
-	while (m_filedownload.GetData(ptr, &size))
+	while (filedownload.GetData(ptr, &size))
 	{
+		recvCount += size;
+		fprintf(stderr, "totalSzie = %6d    recvSize = %6d    GetData Size : %4d \n", totalSize, recvCount, size);
 		ptr = nullptr;
 		size = 0;
 	}

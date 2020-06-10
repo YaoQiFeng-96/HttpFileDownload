@@ -21,7 +21,7 @@ public:
 	CFileDownload();
 	~CFileDownload();
 
-	bool Init(const wchar_t *url, const wchar_t *fileName, bool tag);
+	bool Init(const wchar_t *url, const wchar_t *fileName, bool tag, int *statusCode);
 	DWORD GetFileSize();
 	bool GetData(uint8_t* &pData, int *size);
 

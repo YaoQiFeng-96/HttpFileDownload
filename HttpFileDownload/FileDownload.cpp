@@ -57,12 +57,14 @@ CFileDownload::~CFileDownload()
 	}
 }
 
-bool CFileDownload::Init(const wchar_t * url, const wchar_t * fileName, bool tag)
+bool CFileDownload::Init(const wchar_t * url, const wchar_t * fileName, bool tag, int *statusCode)
 {
 	WinHttpCrackUrl(url, 0, ICU_ESCAPE, &m_pUrlCom);
 
 	if (tag)
 	{
+		if (nullptr == fileName)
+			return false;
 		fp = CreateFileW(fileName, 
 			GENERIC_WRITE, 
 			FILE_SHARE_READ, 
@@ -72,7 +74,7 @@ bool CFileDownload::Init(const wchar_t * url, const wchar_t * fileName, bool tag
 			NULL);
 		if (nullptr == fp)
 		{
-			fprintf(stderr, "file create failed. \n");
+			fprintf(stderr, "File create failed. \n");
 			return false;
 		}
 	}
@@ -95,21 +97,21 @@ bool CFileDownload::Init(const wchar_t * url, const wchar_t * fileName, bool tag
 		return false;
 
 
-	DWORD statusCode = 0;
+	//DWORD statusCode = 0;
 	DWORD dwSize = sizeof(DWORD);
 	DWORD index = 0;
 
 	WinHttpQueryHeaders(m_hRequest,
 		WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-		NULL, &statusCode, &dwSize, &index);
-	fprintf(stderr, "status code = %d \n", statusCode);
+		NULL, (LPVOID)statusCode, &dwSize, &index);
+	//fprintf(stderr, "statusCode = %d \n", *statusCode);
 
-	if (404 == statusCode)
+	if (404 == *statusCode)
 	{
-		fprintf(stderr, "404 Not Found. \n");
+		//fprintf(stderr, "404 Not Found. \n");
 		return false;
 	}
-	if (200 != statusCode)
+	if (200 != *statusCode)
 		return false;
 
 	WinHttpCloseHandle(m_hRequest);
@@ -121,7 +123,7 @@ bool CFileDownload::Init(const wchar_t * url, const wchar_t * fileName, bool tag
 	WinHttpReceiveResponse(m_hRequest, 0);
 	WinHttpQueryHeaders(m_hRequest, WINHTTP_QUERY_CONTENT_LENGTH | WINHTTP_QUERY_FLAG_NUMBER, NULL, &m_dwContentSize, &m_dwSizeDW, &m_dwIndex);
 	WinHttpCloseHandle(m_hRequest);
-	fprintf(stderr, "file size = %d \n", m_dwContentSize);
+	//fprintf(stderr, "file size = %d \n", m_dwContentSize);
 
 	m_hRequest = WinHttpOpenRequest(m_hConnect, L"GET", m_pUrlCom.lpszUrlPath, L"HTTP/1.1", WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_REFRESH);
 	if (nullptr == m_hRequest)
